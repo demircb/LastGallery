@@ -3,8 +3,8 @@ using UnityEngine;
 public class ResizeCubeToTexture : MonoBehaviour
 {
     public Texture2D paintingTexture; // Assign your painting texture in the Inspector
-    [SerializeField] float scalefactor = 0.001f;
-    [SerializeField] float paintingDepth = 0.3f;
+    [SerializeField] float scalefactor = 0.0003f;
+    [SerializeField] float paintingDepth = 0.03f;
     private void Start()
     {
         // Get the dimensions of the painting texture
