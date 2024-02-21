@@ -1,39 +1,51 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
-{
-    [Header("Movement Settings")]
-    public float moveSpeed = 3f; // Reduced movement speed
-    public float rotationSpeed = 2f; // Mouse rotation speed
-
-    private float xRotation = 0f;
-
-    void Start()
+    public class PlayerController : MonoBehaviour
     {
-        Cursor.lockState = CursorLockMode.Locked; // Hide cursor
+        public float turnRate = 100.0f;
+        public float speed = 5.0f;
+        public GameObject XRrig; // Reference to your XR Rig GameObject
+        public GameObject camera;
+        private bool isPCViewActive = false;
+        private float verticalRotation = 0.0f;
+        public float verticalRotationLimit = 80.0f; // Limit for vertical rotation
+
+        void Update()
+        {
+            // Check for Enter key press to toggle views
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                ToggleView();
+            }
+
+            // If PC view is active, enable movement and turning
+            if (isPCViewActive)
+            {
+                float moveHorizontal = Input.GetAxis("Horizontal");
+                float moveVertical = Input.GetAxis("Vertical");
+                float mouseX = Input.GetAxis("Mouse X");
+                float mouseY = -Input.GetAxis("Mouse Y"); // Inverted Y for natural mouse-look
+
+                Vector3 movement = new Vector3(moveHorizontal, 0.0f, moveVertical);
+                transform.Translate(movement * speed * Time.deltaTime);
+
+                // Rotate the player based on mouse movement
+                transform.Rotate(Vector3.up, mouseX * turnRate * Time.deltaTime);
+
+                // Calculate new vertical rotation, clamp it, and apply it to the camera
+                verticalRotation += mouseY * turnRate * Time.deltaTime;
+                verticalRotation = Mathf.Clamp(verticalRotation, -verticalRotationLimit, verticalRotationLimit);
+                camera.transform.localEulerAngles = new Vector3(verticalRotation, camera.transform.localEulerAngles.y, 0.0f);
+            }
+        }
+
+        void ToggleView()
+        {
+            // Toggle the active state of the PC view and XR Rig
+            isPCViewActive = true;
+            XRrig.SetActive(false);
+            camera.SetActive(true);
+            this.gameObject.SetActive(true);
+        }
     }
 
-    void Update()
-    {
-        // Handle WASD movement
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
-        Vector3 moveDirection = new Vector3(horizontalInput, 0f, verticalInput).normalized;
-        Vector3 moveAmount = moveDirection * moveSpeed * Time.deltaTime;
-        transform.Translate(moveAmount);
-
-        // Handle mouse look
-        float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
-        float mouseY = Input.GetAxis("Mouse Y") * rotationSpeed;
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f); // Limit vertical rotation
-        transform.Rotate(Vector3.up * mouseX);
-        transform.Rotate(Vector2.left * mouseY); // Apply vertical rotation
-
-        // Debug logs
-        Debug.Log($"Mouse X: {mouseX}, Mouse Y: {mouseY}");
-        Debug.Log($"X Rotation: {xRotation}");
-    }
-}
